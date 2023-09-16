@@ -3,7 +3,7 @@
 * Email:         23815631@student.uwa.edu.au
 * 
 * Project Name:  Parallel implementation of search based on Fish School Behaviour
-* Description:   
+* Description:   In first step we create a sequential program to parallel computation
 * 
 * Date Created:  September 16, 2023
 * Last Updated:  September 16, 2023
@@ -46,16 +46,19 @@ Timer *barycentreTimer;
 double *barycentre;
 int currentRound;
 
-void initializeFish() {
-    srand(time(NULL));  // Seed random number generator
-    
+// initialize the whole system
+void systemInitialize(){
+    srand(time(NULL));  // Seed random number generator    
     school = (Fish *)malloc(sizeof(Fish) * N); 
     objectFunctionTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
     weightTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
     barycentreTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
     barycentre = (double *)malloc(sizeof(double) * ROUND); 
     currentRound = 0;
+}
 
+// initialize the fish school in the pool
+void initializeFish() {
     if (!school || !objectFunctionTimer || !weightTimer || !barycentreTimer) {
         printf("Memory allocation failed!\n");
         exit(1);
@@ -69,6 +72,7 @@ void initializeFish() {
     }
 }
 
+// move the fishes is each round: generate 2 random little numbers and add them in coordinates with both x and y of each fish and calculate the objective function currrently in this round.
 void move() {
     for(int i = 0; i < N; i++) {
         school[i].x += (double)rand() / RAND_MAX * 0.2 - 0.1;
@@ -78,6 +82,7 @@ void move() {
     }
 }
 
+// each fish in fish school eat the food: calculate the current weight for each fish in fish school in this round.
 void eat() {
     double maxDiff = POND_SIZE;  
     for(int i = 0; i < N; i++) {
@@ -96,6 +101,7 @@ void eat() {
     }
 }
 
+// orient each fish to idea direction based on collective experience - barycentre: calculate the barycentre for each round for all fishes in the fish school
 void collectiveExperience() {
     double barycentreNumerator = 0.0;
     double barycentreDenominator = 0.0;
@@ -103,9 +109,16 @@ void collectiveExperience() {
         barycentreNumerator += school[i].currentObjective * school[i].weight;
         barycentreDenominator += school[i].currentObjective;
     }
+
+    if (barycentreDenominator == 0.0) {
+        printf("Calculation Error\n");
+        exit(1);
+    }
+
     barycentre[currentRound] = barycentreNumerator / barycentreDenominator;
 }
 
+// this is the function for optimizing the FSB: operating and start all system.
 void optimization() {
     for(int i = 0; i < ROUND; i++) {
         objectFunctionTimer[i].time_start = omp_get_wtime();
@@ -130,9 +143,9 @@ void optimization() {
     }
 }
 
-
+// Free the dynamically allocated memory before exiting.
 void freeAll(){
-    free(school);  // Free the dynamically allocated memory before exiting
+    free(school);  
     free(objectFunctionTimer);
     free(weightTimer);
     free(barycentreTimer);
@@ -140,6 +153,7 @@ void freeAll(){
 }
 
 int main() {
+    systemInitialize();
     initializeFish();
     optimization();
     freeAll();
