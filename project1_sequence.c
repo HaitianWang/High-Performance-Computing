@@ -24,6 +24,7 @@
 #define W 5.0           // Initial weight of fish
 #define W_MAX 10.0      // Maximum weight of fish
 #define POND_SIZE 200   // Pond size
+#define ROUND 100        // Round
 
 
 typedef struct {
@@ -32,9 +33,15 @@ typedef struct {
     double weight;
 } Fish;
 
-Fish school[N];
+Fish *school;
 
 void initializeFish() {
+    school = (Fish *)malloc(sizeof(Fish) * N);  // Dynamic allocation for fish
+    if (!school) {
+        printf("Memory allocation failed!\n");
+        exit(1);
+    }
+
     for(int i = 0; i < N; i++) {
         school[i].x = ((double)rand() / RAND_MAX - 0.5) * POND_SIZE;
         school[i].y = ((double)rand() / RAND_MAX - 0.5) * POND_SIZE;
@@ -93,17 +100,24 @@ double collectiveExperience() {
     return barycentreNumerator / barycentreDenominator;
 }
 
+void optimization(){
+
+        for(int i = 0; i < ROUND; i++) {
+        eat();
+        printf("Round %d - Barycentre: %f\n", i+1, collectiveExperience());
+    }
+}
+
 int main() {
     srand(time(NULL)); // Seed random number generator
 
     initializeFish();
 
-    int rounds = 100;  // You can change the number of rounds if needed
-    for(int i = 0; i < rounds; i++) {
+    for(int i = 0; i < ROUND; i++) {
         eat();
         printf("Round %d - Barycentre: %f\n", i+1, collectiveExperience());
     }
-
+    optimization();
     return 0;
 }
 
