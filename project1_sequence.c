@@ -42,7 +42,7 @@ typedef struct {
 Fish *school; //pointer to a dynamic array to store the fishes named school
 Timer *objectFunctionTimer;
 Timer *weightTimer;
-Timer *barycentreTimer;
+Timer *barycentreTimer;                    //  1.   totalTimer?     +    2_Dimensional
 double *barycentre;
 int currentRound;
 
@@ -156,7 +156,9 @@ int main() {
     systemInitialize();
     initializeFish();
     optimization();
-    freeAll();
+   
+                                       // 2.    fwrite（）   write  the data  into  file, code:  ?     
+     freeAll();
     return 0;
 }
 
