@@ -24,6 +24,7 @@
 #define W_MAX 10.0      // Maximum weight of fish
 #define POND_SIZE 200   // Pond size
 #define ROUND 10       // Number of rounds
+#define TIMES 5         // number of experiments
 
 typedef struct {
     double x;
@@ -42,9 +43,11 @@ typedef struct {
 Fish *school; //pointer to a dynamic array to store the fishes named school
 Timer *objectFunctionTimer;
 Timer *weightTimer;
-Timer *barycentreTimer;                    //  1.   totalTimer?     +    2_Dimensional
+Timer *barycentreTimer;                   
+Timer *totalTimer;
 double *barycentre;
 int currentRound;
+int currentExperiment;
 
 // initialize the whole system
 void systemInitialize(){
@@ -53,17 +56,20 @@ void systemInitialize(){
     objectFunctionTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
     weightTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
     barycentreTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
+    totalTimer = (Timer *)malloc(sizeof(Timer) * TIMES); 
     barycentre = (double *)malloc(sizeof(double) * ROUND); 
     currentRound = 0;
-}
+    currentExperiment = 0;
 
-// initialize the fish school in the pool
-void initializeFish() {
-    if (!school || !objectFunctionTimer || !weightTimer || !barycentreTimer) {
+    if (!school || !objectFunctionTimer || !weightTimer || !barycentreTimer || !totalTimer || !barycentre) {
         printf("Memory allocation failed!\n");
         exit(1);
     }
 
+}
+
+// initialize the fish school in the pool
+void initializeFish() {
     for(int i = 0; i < N; i++) {
         school[i].x = ((double)rand() / RAND_MAX - 0.5) * POND_SIZE;
         school[i].y = ((double)rand() / RAND_MAX - 0.5) * POND_SIZE;
@@ -120,7 +126,7 @@ void collectiveExperience() {
 
 // this is the function for optimizing the FSB: operating and start all system.
 void optimization() {
-    for(int i = 0; i < ROUND; i++) {               //2 . timer  ??
+    for(int i = 0; i < ROUND; i++) {               
         objectFunctionTimer[i].time_start = omp_get_wtime();
         move();
         objectFunctionTimer[i].time_end = omp_get_wtime();
@@ -143,22 +149,35 @@ void optimization() {
     }
 }
 
+
+void experiment(){
+
+    for (int i = 0; i < TIMES; i++){
+        totalTimer[i].time_start = omp_get_wtime();
+        optimization();
+        currentRound++;
+        totalTimer[i].time_end = omp_get_wtime();
+        totalTimer[i].time_duration = totalTimer[i].time_end - totalTimer[i].time_start;
+    }
+
+}
+
+
 // Free the dynamically allocated memory before exiting.
 void freeAll(){
     free(school);  
     free(objectFunctionTimer);
     free(weightTimer);
     free(barycentreTimer);
+    free(totalTimer);
     free(barycentre);
 }
 
 int main() {
     systemInitialize();
     initializeFish();
-    optimization();
-   
-                                       // 3.    fwrite（）   write  the data  into  file, code:  ?     
-     freeAll();
+    experiment(); 
+    freeAll();
     return 0;
 }
 
