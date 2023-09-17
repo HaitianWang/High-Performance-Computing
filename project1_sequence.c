@@ -84,11 +84,11 @@ void move() {
 
 // each fish in fish school eat the food: calculate the current weight for each fish in fish school in this round.
 void eat() {
-    double maxDiff = POND_SIZE;  
+    double maxDiff = -INFINITY;         
     for(int i = 0; i < N; i++) {
         double diff = school[i].prevObjective - school[i].currentObjective;
-        if(diff < maxDiff) {
-            maxDiff = diff;
+        if(diff > maxDiff) {          
+            maxDiff = diff;            
         }
     }
 
@@ -120,7 +120,7 @@ void collectiveExperience() {
 
 // this is the function for optimizing the FSB: operating and start all system.
 void optimization() {
-    for(int i = 0; i < ROUND; i++) {
+    for(int i = 0; i < ROUND; i++) {               //3 . timer  ??
         objectFunctionTimer[i].time_start = omp_get_wtime();
         move();
         objectFunctionTimer[i].time_end = omp_get_wtime();
