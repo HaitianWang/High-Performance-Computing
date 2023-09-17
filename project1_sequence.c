@@ -120,7 +120,7 @@ void collectiveExperience() {
 
 // this is the function for optimizing the FSB: operating and start all system.
 void optimization() {
-    for(int i = 0; i < ROUND; i++) {               //3 . timer  ??
+    for(int i = 0; i < ROUND; i++) {               //2 . timer  ??
         objectFunctionTimer[i].time_start = omp_get_wtime();
         move();
         objectFunctionTimer[i].time_end = omp_get_wtime();
@@ -157,7 +157,7 @@ int main() {
     initializeFish();
     optimization();
    
-                                       // 2.    fwrite（）   write  the data  into  file, code:  ?     
+                                       // 3.    fwrite（）   write  the data  into  file, code:  ?     
      freeAll();
     return 0;
 }
