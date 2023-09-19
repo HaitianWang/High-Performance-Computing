@@ -70,8 +70,9 @@ void systemInitialize(){
 }
 
 // initialize the fish school in the pool
-#pragma omp parallel for
+
 void initializeFish() {
+    #pragma omp parallel for
     for(int i = 0; i < NUM_FISH; i++) {
         school[i].x = ((double)rand() / RAND_MAX - 0.5) * POND_SIZE;
         school[i].y = ((double)rand() / RAND_MAX - 0.5) * POND_SIZE;
@@ -81,8 +82,8 @@ void initializeFish() {
 }
 
 // move the fishes is each round: generate 2 random little numbers and add them in coordinates with both x and y of each fish and calculate the objective function currrently in this round.
-#pragma omp parallel for
 void move() {
+  #pragma omp parallel for
     for(int i = 0; i < NUM_FISH; i++) {
         school[i].x += (double)rand() / RAND_MAX * 0.2 - 0.1;
         school[i].y += (double)rand() / RAND_MAX * 0.2 - 0.1;
