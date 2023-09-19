@@ -3,7 +3,8 @@
 * Email:         23815631@student.uwa.edu.au
 * 
 * Project Name:  Parallel implementation of search based on Fish School Behaviour
-* Description:   In first step we create a sequential program to parallel computation
+* Description:   In second step we create a experiments program to parallel computation 
+                 and optimization the performance of whole program
 * 
 * Date Created:  September 16, 2023
 * Last Updated:  September 16, 2023
@@ -19,12 +20,13 @@
 #include <time.h>
 #include <omp.h>
 
-#define NUM_FISH 100000000        // Number of fish
+#define NUM_FISH 10000000        // Number of fish
 #define WEIGHT 5.0           // Initial weight of fish
 #define W_MAX 10.0      // Maximum weight of fish
 #define POND_SIZE 200   // Pond size
 #define ROUND 10       // Number of rounds
 #define TIMES 5         // number of experiments
+#define NUM_THREADS 8   // Number of THREADS in this process
 
 typedef struct {
     double x;
@@ -40,28 +42,27 @@ typedef struct {
     double time_duration;
 } Timer;
 
-Fish *school; //pointer to a dynamic array to store the fishes named school
-Timer *objectFunctionTimer;
-Timer *weightTimer;
-Timer *barycentreTimer;                   
+Fish *school; //pointer to a dynamic array to store the fishes named school                
 Timer *performanceTimer;
 double *barycentre;
 int currentRound;
 int currentExperiment;
+unsigned int *rand_seeds;
 
 // initialize the whole system
 void systemInitialize(){
-    srand(time(NULL));  // Seed random number generator    
+    omp_set_num_threads(NUM_THREADS);  
     school = (Fish *)malloc(sizeof(Fish) * NUM_FISH); 
-    objectFunctionTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
-    weightTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
-    barycentreTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
     performanceTimer = (Timer *)malloc(sizeof(Timer) * TIMES); 
     barycentre = (double *)malloc(sizeof(double) * ROUND); 
     currentRound = 0;
     currentExperiment = 0;
+    rand_seeds = (unsigned int*)malloc(NUM_THREADS * sizeof(unsigned int)); // Seed random number generator 
+    for (int i = 0; i < NUM_THREADS; i++) {
+        rand_seeds[i] = rand();
+    }   
 
-    if (!school || !objectFunctionTimer || !weightTimer || !barycentreTimer || !performanceTimer || !barycentre) {
+    if (!school || !performanceTimer || !barycentre) {
         printf("Memory allocation failed!\n");
         exit(1);
     }
@@ -69,6 +70,7 @@ void systemInitialize(){
 }
 
 // initialize the fish school in the pool
+#pragma omp parallel for
 void initializeFish() {
     for(int i = 0; i < NUM_FISH; i++) {
         school[i].x = ((double)rand() / RAND_MAX - 0.5) * POND_SIZE;
@@ -79,6 +81,7 @@ void initializeFish() {
 }
 
 // move the fishes is each round: generate 2 random little numbers and add them in coordinates with both x and y of each fish and calculate the objective function currrently in this round.
+#pragma omp parallel for
 void move() {
     for(int i = 0; i < NUM_FISH; i++) {
         school[i].x += (double)rand() / RAND_MAX * 0.2 - 0.1;
@@ -90,7 +93,8 @@ void move() {
 
 // each fish in fish school eat the food: calculate the current weight for each fish in fish school in this round.
 void eat() {
-    double maxDiff = -INFINITY;         
+    double maxDiff = -INFINITY;  
+    #pragma omp parallel for reduction(max: maxDiff)       
     for(int i = 0; i < NUM_FISH; i++) {
         double diff = school[i].prevObjective - school[i].currentObjective;
         if(diff > maxDiff) {          
@@ -98,7 +102,8 @@ void eat() {
         }
     }
 
-    for(int i = 0; i < NUM_FISH; i++) {
+    #pragma omp parallel for
+    for(int i = 0; i < NUM_FISH; i++) { 
         double diff = school[i].prevObjective - school[i].currentObjective;
         school[i].weight += diff / maxDiff;
         if(school[i].weight > W_MAX) {
@@ -111,6 +116,7 @@ void eat() {
 void collectiveExperience() {
     double barycentreNumerator = 0.0;
     double barycentreDenominator = 0.0;
+    #pragma omp parallel for reduction(+:barycentreNumerator, barycentreDenominator)
     for(int i = 0; i < NUM_FISH; i++) {
         barycentreNumerator += school[i].currentObjective * school[i].weight;
         barycentreDenominator += school[i].currentObjective;
@@ -127,24 +133,11 @@ void collectiveExperience() {
 // this is the function for optimizing the FSB: operating and start all system.
 void optimization() {
     for(int i = 0; i < ROUND; i++) {               
-        objectFunctionTimer[i].time_start = omp_get_wtime();
         move();
-        objectFunctionTimer[i].time_end = omp_get_wtime();
-        objectFunctionTimer[i].time_duration = objectFunctionTimer[i].time_end - objectFunctionTimer[i].time_start;
-        
-        weightTimer[i].time_start = omp_get_wtime();
         eat();
-        weightTimer[i].time_end = omp_get_wtime();
-        weightTimer[i].time_duration = weightTimer[i].time_end - weightTimer[i].time_start;
-
-        barycentreTimer[i].time_start = omp_get_wtime();
         collectiveExperience();
-        barycentreTimer[i].time_end = omp_get_wtime();
-        barycentreTimer[i].time_duration = barycentreTimer[i].time_end - barycentreTimer[i].time_start;
-
         printf("Round %d - Barycentre: %f\n", i+1, barycentre[i]);
         printf("first fish objective: %f\n", school[0].currentObjective);
-        printf("objectFunctionTimer: %lf - weightTimer: %lf - barycentreTimer: %lf\n", objectFunctionTimer[i].time_duration, weightTimer[i].time_duration, barycentreTimer[i].time_duration);
         currentRound++;
     }
 }
@@ -155,9 +148,10 @@ void experiment(){
     for (int i = 0; i < TIMES; i++){
         performanceTimer[i].time_start = omp_get_wtime();
         optimization();
-        currentRound++;
         performanceTimer[i].time_end = omp_get_wtime();
         performanceTimer[i].time_duration = performanceTimer[i].time_end - performanceTimer[i].time_start;
+        printf("performanceTimer: %lf\n", performanceTimer[i].time_duration);
+        currentExperiment++;
     }
 
 }
@@ -166,9 +160,6 @@ void experiment(){
 // Free the dynamically allocated memory before exiting.
 void freeAll(){
     free(school);  
-    free(objectFunctionTimer);
-    free(weightTimer);
-    free(barycentreTimer);
     free(performanceTimer);
     free(barycentre);
 }
