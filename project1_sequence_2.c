@@ -19,8 +19,8 @@
 #include <time.h>
 #include <omp.h>
 
-#define N 100000000        // Number of fish
-#define W 5.0           // Initial weight of fish
+#define NUM_FISH 10000000        // Number of fish
+#define WEIGHT 5.0           // Initial weight of fish
 #define W_MAX 10.0      // Maximum weight of fish
 #define POND_SIZE 200   // Pond size
 #define ROUND 10       // Number of rounds
@@ -40,10 +40,7 @@ typedef struct {
     double time_duration;
 } Timer;
 
-Fish *school; //pointer to a dynamic array to store the fishes named school
-Timer *objectFunctionTimer;
-Timer *weightTimer;
-Timer *barycentreTimer;                   
+Fish *school; //pointer to a dynamic array to store the fishes named school                
 Timer *performanceTimer;
 double *barycentre;
 int currentRound;
@@ -53,15 +50,12 @@ int currentExperiment;
 void systemInitialize(){
     srand(time(NULL));  // Seed random number generator    
     school = (Fish *)malloc(sizeof(Fish) * NUM_FISH); 
-    objectFunctionTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
-    weightTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
-    barycentreTimer = (Timer *)malloc(sizeof(Timer) * ROUND); 
     performanceTimer = (Timer *)malloc(sizeof(Timer) * TIMES); 
     barycentre = (double *)malloc(sizeof(double) * ROUND); 
     currentRound = 0;
     currentExperiment = 0;
 
-    if (!school || !objectFunctionTimer || !weightTimer || !barycentreTimer || !performanceTimer || !barycentre) {
+    if (!school || !performanceTimer || !barycentre) {
         printf("Memory allocation failed!\n");
         exit(1);
     }
@@ -127,24 +121,12 @@ void collectiveExperience() {
 // this is the function for optimizing the FSB: operating and start all system.
 void optimization() {
     for(int i = 0; i < ROUND; i++) {               
-        objectFunctionTimer[i].time_start = omp_get_wtime();
         move();
-        objectFunctionTimer[i].time_end = omp_get_wtime();
-        objectFunctionTimer[i].time_duration = objectFunctionTimer[i].time_end - objectFunctionTimer[i].time_start;
-        
-        weightTimer[i].time_start = omp_get_wtime();
         eat();
-        weightTimer[i].time_end = omp_get_wtime();
-        weightTimer[i].time_duration = weightTimer[i].time_end - weightTimer[i].time_start;
-
-        barycentreTimer[i].time_start = omp_get_wtime();
         collectiveExperience();
-        barycentreTimer[i].time_end = omp_get_wtime();
-        barycentreTimer[i].time_duration = barycentreTimer[i].time_end - barycentreTimer[i].time_start;
 
         printf("Round %d - Barycentre: %f\n", i+1, barycentre[i]);
         printf("first fish objective: %f\n", school[0].currentObjective);
-        printf("objectFunctionTimer: %lf - weightTimer: %lf - barycentreTimer: %lf\n", objectFunctionTimer[i].time_duration, weightTimer[i].time_duration, barycentreTimer[i].time_duration);
         currentRound++;
     }
 }
@@ -155,9 +137,10 @@ void experiment(){
     for (int i = 0; i < TIMES; i++){
         performanceTimer[i].time_start = omp_get_wtime();
         optimization();
-        currentRound++;
         performanceTimer[i].time_end = omp_get_wtime();
         performanceTimer[i].time_duration = performanceTimer[i].time_end - performanceTimer[i].time_start;
+        printf("performanceTimer: %lf\n", performanceTimer[i].time_duration);
+        currentExperiment++;
     }
 
 }
@@ -166,9 +149,6 @@ void experiment(){
 // Free the dynamically allocated memory before exiting.
 void freeAll(){
     free(school);  
-    free(objectFunctionTimer);
-    free(weightTimer);
-    free(barycentreTimer);
     free(performanceTimer);
     free(barycentre);
 }
