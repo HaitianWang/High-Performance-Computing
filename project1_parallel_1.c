@@ -90,7 +90,6 @@ void systemInitialize(){
 // initialize the fish school in the pool
 void initializeFish() {
     #pragma omp parallel for
-    #pragma omp parallel for
     for(int i = 0; i < NUM_FISH; i++) {
         int tid = omp_get_thread_num();
         school[i].x = ((double)rand_threadsafe() / RAND_MAX - 0.5) * POND_SIZE;
