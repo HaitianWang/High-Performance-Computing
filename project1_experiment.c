@@ -3,6 +3,7 @@
 #include <math.h>
 #include <time.h>
 #include <omp.h>
+#include <string.h>
 
 
 #define NUM_FISH 1000000      // Number of fish
@@ -168,16 +169,51 @@ void freeAll(){
     free(barycentre);
 }
 
-int main() {
-    omp_set_num_threads(13);
-    printf("Begin:\n");
+int main(int argc, char* argv[]) {
+    
+    int num_threads = 8;  
+    char* schedule = "static"; 
+    char* construct = "reduction";  
+    
+   
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-t") == 0) {  
+            num_threads = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "-s") == 0) {  
+            schedule = argv[++i];
+        } else if (strcmp(argv[i], "-c") == 0) {  
+            construct = argv[++i];
+        }
+    }
+    
+   
+    omp_set_num_threads(num_threads);
+
+   
+    if (strcmp(schedule, "dynamic") == 0) {
+        omp_set_schedule(omp_sched_dynamic, 1);
+    } else if (strcmp(schedule, "guided") == 0) {
+        omp_set_schedule(omp_sched_guided, 1);
+    } else if (strcmp(schedule, "runtime") == 0) {
+        omp_set_schedule(omp_sched_runtime, 0);
+    } else {
+        omp_set_schedule(omp_sched_static, 1);
+    }
+
+    
+    printf("Threads: %d, Schedule: %s, Construct: %s\n", num_threads, schedule, construct);
+    
+    
     systemInitialize();
   
+   
     initializeFish();
   
+    
     experiment();
-    printf("END");
+    
+ 
     freeAll();
-    return 1;
-}
 
+    return 0;
+}
