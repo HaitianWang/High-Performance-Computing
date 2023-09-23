@@ -4,6 +4,8 @@
 #include <time.h>
 #include <omp.h>
 #include <string.h>
+#include <ctype.h>
+
 
 typedef enum {
     STATIC = 0,
@@ -98,26 +100,6 @@ void move(Fish* school, const Config* config) {
 }
 
 
-void eat_reduction(Fish* school, const Config* config) {
-    double maxDiff = -INFINITY;
-    #pragma omp parallel for reduction(max: maxDiff)
-    for(int i = 0; i < config->num_fish; i++) {
-        double diff = school[i].prevObjective - school[i].currentObjective;
-        if(diff > maxDiff) {
-            maxDiff = diff;
-        }
-    }
-
-    #pragma omp parallel for
-    for(int i = 0; i < config->num_fish; i++) {
-        double diff = school[i].prevObjective - school[i].currentObjective;
-        school[i].weight += diff / maxDiff;
-        if(school[i].weight > config->w_max) {
-            school[i].weight = config->w_max;
-        }
-    }
-}
-
 void eat(Fish* school, const Config* config) {
     double maxDiff = -INFINITY;
 
@@ -168,7 +150,8 @@ void collectiveExperience(Fish* school, double* barycentre, const Config* config
 }
 
 void optimization(Fish* school, double* barycentre, const Config* config) {
-    for(int r = 0; r < config->round; r++) {
+    int totalRounds = config->round;
+    for(int r = 0; r < totalRounds; r++) {
         move(school, config);
         eat(school, config);
         collectiveExperience(school, barycentre, config);
@@ -178,7 +161,7 @@ void optimization(Fish* school, double* barycentre, const Config* config) {
 void experiment(Fish* school, Timer* performanceTimer, double* barycentre, const Config* config) {
     double totalExperimentTime = 0;
     for (int i = 0; i < config->times; i++) {
-        config->round = 0;  // Reset round
+        config->round = 0;  
         performanceTimer[i].time_start = omp_get_wtime();
         optimization(school, barycentre, config);
         performanceTimer[i].time_end = omp_get_wtime();
@@ -192,7 +175,22 @@ void experiment(Fish* school, Timer* performanceTimer, double* barycentre, const
 }
 
 
+
 int main(int argc, char* argv[]) {
+
+    Config config = {
+        .num_fish = 1000000,
+        .weight = 5.0,
+        .w_max = 10.0,
+        .pond_size = 200,
+        .round = 10,
+        .times = 5,
+        .num_threads = 8,
+        .schedule = STATIC,
+        .construct = REDUCTION,
+        .chunk_size = 1
+    };
+
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-t") == 0) {
