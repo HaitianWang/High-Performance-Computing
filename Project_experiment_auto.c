@@ -158,7 +158,7 @@ void optimization(Fish* school, double* barycentre, const Config* config) {
     }
 }
 
-void experiment(Fish* school, Timer* performanceTimer, double* barycentre, const Config* config) {
+void experiment(Fish* school, Timer* performanceTimer, double* barycentre, Config* config) {
     double totalExperimentTime = 0;
     for (int i = 0; i < config->times; i++) {
         config->round = 0;  
@@ -243,7 +243,7 @@ int main(int argc, char* argv[]) {
             omp_set_schedule(omp_sched_guided, config.chunk_size);
             break;
         case RUNTIME:
-            omp_set_schedule(omp_sched_runtime, 0);
+            omp_set_schedule(omp_sched_auto, 0);
             break;
     }
 
