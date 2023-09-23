@@ -112,7 +112,7 @@ void move() {
 }
 
 // each fish in fish school eat the food: calculate the current weight for each fish in fish school in this round.
-void eat() {
+void eat_reduction() {
     double maxDiff = -INFINITY;  
     #pragma omp parallel for reduction(max: maxDiff)       
     for(int i = 0; i < NUM_FISH; i++) {
@@ -154,7 +154,7 @@ void collectiveExperience() {
 void optimization() {
     for(int i = 0; i < ROUND; i++) {               
         move();
-        eat();
+        eat_reduction();
         collectiveExperience();
         printf("Round %d - Barycentre: %f\n", i+1, barycentre[i]);
         printf("first fish objective: %f\n", school[0].currentObjective);

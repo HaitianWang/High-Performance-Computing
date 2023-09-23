@@ -83,7 +83,7 @@ void move() {
 }
 
 // each fish in fish school eat the food: calculate the current weight for each fish in fish school in this round.
-void eat() {
+void eat_reduction() {
     double maxDiff = -INFINITY;         
     for(int i = 0; i < NUM_FISH; i++) {
         double diff = school[i].prevObjective - school[i].currentObjective;
@@ -122,7 +122,7 @@ void collectiveExperience() {
 void optimization() {
     for(int i = 0; i < ROUND; i++) {               
         move();
-        eat();
+        eat_reduction();
         collectiveExperience();
 
         printf("Round %d - Barycentre: %f\n", i+1, barycentre[i]);

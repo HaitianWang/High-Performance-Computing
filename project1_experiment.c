@@ -96,11 +96,33 @@ void move() {
 }
 
 // each fish in fish school eat the food: calculate the current weight for each fish in fish school in this round.
-void eat() {
+void eat_reduction() {
     double maxDiff = -INFINITY;
     #pragma omp parallel for reduction(max: maxDiff)
     for(int i = 0; i < NUM_FISH; i++) {
         double diff = school[i].prevObjective - school[i].currentObjective;
+        if(diff > maxDiff) {
+            maxDiff = diff;
+        }
+    }
+
+    #pragma omp parallel for
+    for(int i = 0; i < NUM_FISH; i++) {
+        double diff = school[i].prevObjective - school[i].currentObjective;
+        school[i].weight += diff / maxDiff;
+        if(school[i].weight > W_MAX) {
+            school[i].weight = W_MAX;
+        }
+    }
+}
+
+// each fish in fish school eat the food: calculate the current weight for each fish in fish school in this round.
+void eat_critical() {
+    double maxDiff = -INFINITY;
+    #pragma omp parallel for
+    for(int i = 0; i < NUM_FISH; i++) {
+        double diff = school[i].prevObjective - school[i].currentObjective;
+        #pragma omp critical
         if(diff > maxDiff) {
             maxDiff = diff;
         }
@@ -138,7 +160,8 @@ void collectiveExperience() {
 void optimization() {
     for(int i = 0; i < ROUND; i++) {
         move();
-        eat();
+        eat_reduction();
+        //eat_critical();
         collectiveExperience();
         currentRound++;
     }
@@ -170,7 +193,7 @@ void freeAll(){
 }
 
 int main(int argc, char* argv[]) {
-    
+
     int num_threads = 8;  
     char* schedule = "static"; 
     char* construct = "reduction";  
@@ -209,7 +232,7 @@ int main(int argc, char* argv[]) {
    
     initializeFish();
   
-    
+  
     experiment();
     
  

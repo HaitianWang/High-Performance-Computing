@@ -89,7 +89,7 @@ void move() {
 }
 
 // each fish in fish school eat the food: calculate the current weight for each fish in fish school in this round.
-void eat() {
+void eat_reduction() {
     double maxDiff = -INFINITY;         
     for(int i = 0; i < NUM_FISH; i++) {
         double diff = school[i].prevObjective - school[i].currentObjective;
@@ -133,7 +133,7 @@ void optimization() {
         objectFunctionTimer[i].time_duration = objectFunctionTimer[i].time_end - objectFunctionTimer[i].time_start;
         
         weightTimer[i].time_start = omp_get_wtime();
-        eat();
+        eat_reduction();
         weightTimer[i].time_end = omp_get_wtime();
         weightTimer[i].time_duration = weightTimer[i].time_end - weightTimer[i].time_start;
 
