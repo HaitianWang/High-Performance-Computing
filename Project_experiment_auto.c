@@ -272,7 +272,8 @@ int main(int argc, char* argv[]) {
         exit(1);
     }
 
-    experiment(school, performanceTimer, barycentre, &config);
+    experiment(school, performanceTimer, barycentre, &config, config.filename);
+
 
     free(barycentre);
     free(performanceTimer);
