@@ -24,12 +24,14 @@ typedef struct {
     double weight;
     double w_max;
     int pond_size;
+    int total_rounds;
     int round;
     int times;
     int num_threads;
     ScheduleType schedule;
     ConstructType construct;
-    int chunk_size;  
+    int chunk_size;
+    char filename[256];  
 } Config;
 
 typedef struct {
@@ -150,47 +152,55 @@ void collectiveExperience(Fish* school, double* barycentre, const Config* config
 }
 
 void optimization(Fish* school, double* barycentre, const Config* config) {
-    int totalRounds = config->round;
-    for(int r = 0; r < totalRounds; r++) {
+    for(int r = 0; r < config -> total_rounds; r++) {
         move(school, config);
         eat(school, config);
         collectiveExperience(school, barycentre, config);
     }
 }
 
-void experiment(Fish* school, Timer* performanceTimer, double* barycentre, Config* config) {
+void experiment(Fish* school, Timer* performanceTimer, double* barycentre, Config* config, const char* filename) {
+    FILE *file = fopen(filename, "a");  // 注意改为 "a" 追加模式，以便多次写入
+    if(!file) {
+        perror("Failed to open the output file");
+        exit(1);
+    }
+
     double totalExperimentTime = 0;
     for (int i = 0; i < config->times; i++) {
-        config->round = 0;  
+        config->round = 0;
         performanceTimer[i].time_start = omp_get_wtime();
         optimization(school, barycentre, config);
         performanceTimer[i].time_end = omp_get_wtime();
         performanceTimer[i].time_duration = performanceTimer[i].time_end - performanceTimer[i].time_start;
-        printf("Times of %d    performance Time: %lf  \n\n", i+1, performanceTimer[i].time_duration);
         totalExperimentTime +=  performanceTimer[i].time_duration;
     }
 
     double averageExperimentTime = totalExperimentTime / config->times;
-    printf("\nThe final average performance time is: %lf\n", averageExperimentTime);
-}
+    fprintf(file, "%d,%lf\n", config->num_threads, averageExperimentTime);
 
+    fclose(file);
+}
 
 
 int main(int argc, char* argv[]) {
 
     Config config = {
-        .num_fish = 100000000,
+        .num_fish = 10000000,
         .weight = 5.0,
         .w_max = 10.0,
         .pond_size = 200,
-        .round = 10,
+        .round = 0,
+        .total_rounds = 10,
         .times = 5,
         .num_threads = 8,
         .schedule = STATIC,
         .construct = REDUCTION,
-        .chunk_size = 1
+        .chunk_size = 1,
+        .filename = {0}
     };
 
+    strcpy(config.filename, "default_output.csv");
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-t") == 0) {
@@ -228,7 +238,11 @@ int main(int argc, char* argv[]) {
             } else if (strcmp(argv[i], "critical") == 0) {
                 config.construct = CRITICAL;
             }
-        } // chache的没写
+        }
+        else if (strcmp(argv[i], "-f") == 0) {
+            strcpy(config.filename, argv[++i]);
+        }
+
     }
 
     // 设置调度策略
