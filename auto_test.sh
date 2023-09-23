@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 编译C程序
-gcc Project_experiment_auto.c -o Project_experiment_auto -fopenmp
+gcc -o Project_experiment_auto Project_experiment_auto.c -fopenmp -lm
 
 # 实验一
 echo "Experiment 1 Results" > experiment1_results.txt
