@@ -18,6 +18,6 @@ declare -a thread_values=(2 4 8)
 for threads in "${thread_values[@]}"; do
     # 遍历每个construct
     for constr in "${constructs[@]}"; do
-        ./Project_experiment_auto -t $threads -s static -c $constr -f $filename
+        ./Project_experiment_auto -t $threads -s static 50 -c $constr -f $filename
     done
 done

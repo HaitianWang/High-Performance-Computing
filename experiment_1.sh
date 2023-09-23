@@ -15,6 +15,6 @@ declare -a constructs=("reduction" "critical")
 for i in {1..16}; do
     # 遍历每个construct
     for constr in "${constructs[@]}"; do
-        ./Project_experiment_auto -t $i -s static -c $constr -f $filename
+        ./Project_experiment_auto -t $i -s static 50 -c $constr -f $filename
     done
 done

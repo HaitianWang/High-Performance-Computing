@@ -25,7 +25,7 @@ for threads in "${thread_values[@]}"; do
             # 对于static, dynamic, guided调度策略，考虑chunk值
             for n in {1..12}; do
                 chunk=$((2**$n))
-                ./Project_experiment_auto -t $threads -s $sched -c reduction -f $filename
+                ./Project_experiment_auto -t $threads -s $sched $chunk -c reduction -f $filename
             done
         fi
     done
