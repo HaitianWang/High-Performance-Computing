@@ -191,7 +191,7 @@ void experiment(Fish* school, Timer* performanceTimer, double* barycentre, Confi
     fprintf(file, "%d,%s,%d,%s,%s,%lf\n", 
         config->num_threads, 
         scheduleTypeToStr(config->schedule),
-        (config->schedule == RUNTIME) ? 0 : str(config->chunk_size), 
+        (config->schedule == RUNTIME) ? 0 : config->chunk_size, 
         (config->construct == REDUCTION) ? "reduction" : "critical", 
         "default",
         averageExperimentTime
