@@ -179,7 +179,7 @@ void experiment(Fish* school, Timer* performanceTimer, double* barycentre, Confi
 int main(int argc, char* argv[]) {
 
     Config config = {
-        .num_fish = 1000000,
+        .num_fish = 10000000,
         .weight = 5.0,
         .w_max = 10.0,
         .pond_size = 200,
