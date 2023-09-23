@@ -6,7 +6,7 @@ gcc -o Project_experiment_auto Project_experiment_auto.c -fopenmp -lm
 filename="experiment2_results.csv"
 
 # Write headers
-echo "Threads,Schedule,Chunk,Construct,Runtime" > $filename
+echo "Threads,Schedule,Chunk,Construct,Cache,Runtime" > $filename
 
 # 定义调度策略数组
 declare -a schedules=("static" "dynamic" "guided" "runtime")

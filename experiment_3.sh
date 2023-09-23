@@ -6,7 +6,7 @@ gcc -o Project_experiment_auto Project_experiment_auto.c -fopenmp -lm
 filename="experiment3_results.csv"
 
 # Write headers
-echo "Threads,Schedule,Construct,Runtime" > $filename
+echo "Threads,Schedule,Chunk,Construct,Cache,Runtime" > $filename
 
 # 定义constructs数组
 declare -a constructs=("reduction" "critical")

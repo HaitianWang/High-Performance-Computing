@@ -31,6 +31,7 @@ typedef struct {
     ScheduleType schedule;
     ConstructType construct;
     int chunk_size;
+    char cache[256]; 
     char filename[256];  
 } Config;
 
@@ -187,11 +188,12 @@ void experiment(Fish* school, Timer* performanceTimer, double* barycentre, Confi
     }
 
     double averageExperimentTime = totalExperimentTime / config->times;
-    fprintf(file, "%d,%s,%d,%s,%lf\n", 
+    fprintf(file, "%d,%s,%d,%s,%s,%lf\n", 
         config->num_threads, 
         scheduleTypeToStr(config->schedule),
-        config->chunk_size, 
+        (config->schedule == RUNTIME) ? "NA" : config->chunk_size, 
         (config->construct == REDUCTION) ? "reduction" : "critical", 
+        "default",
         averageExperimentTime
     );
 
@@ -213,7 +215,8 @@ int main(int argc, char* argv[]) {
         .schedule = STATIC,
         .construct = REDUCTION,
         .chunk_size = 1,
-        .filename = {0},
+        .cache = "default",
+        .filename = {0}
     };
 
     strcpy(config.filename, "default_output.csv");
