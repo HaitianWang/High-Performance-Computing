@@ -55,6 +55,16 @@ int rand_threadsafe(int tid) {
     return (rand_state[tid] % ((unsigned)RAND_MAX + 1));
 }
 
+const char* scheduleTypeToStr(ScheduleType type) {
+    switch(type) {
+        case STATIC: return "static";
+        case DYNAMIC: return "dynamic";
+        case GUIDED: return "guided";
+        case RUNTIME: return "runtime";
+        default: return "unknown";
+    }
+}
+
 void systemInitialize(const Config* config) {
     srand(time(NULL));
     omp_set_num_threads(config->num_threads);
@@ -160,7 +170,7 @@ void optimization(Fish* school, double* barycentre, const Config* config) {
 }
 
 void experiment(Fish* school, Timer* performanceTimer, double* barycentre, Config* config, const char* filename) {
-    FILE *file = fopen(filename, "a");  // 注意改为 "a" 追加模式，以便多次写入
+    FILE *file = fopen(filename, "a");  
     if(!file) {
         perror("Failed to open the output file");
         exit(1);
@@ -177,7 +187,13 @@ void experiment(Fish* school, Timer* performanceTimer, double* barycentre, Confi
     }
 
     double averageExperimentTime = totalExperimentTime / config->times;
-    fprintf(file, "%d,%lf\n", config->num_threads, averageExperimentTime);
+    fprintf(file, "%d,%s,%d,%s,%lf\n", 
+        config->num_threads, 
+        scheduleTypeToStr(config->schedule),
+        config->chunk_size, 
+        (config->construct == REDUCTION) ? "reduction" : "critical", 
+        averageExperimentTime
+    );
 
     fclose(file);
 }
@@ -197,12 +213,13 @@ int main(int argc, char* argv[]) {
         .schedule = STATIC,
         .construct = REDUCTION,
         .chunk_size = 1,
-        .filename = {0}
+        .filename = {0},
     };
 
     strcpy(config.filename, "default_output.csv");
 
     for (int i = 1; i < argc; i++) {
+
         if (strcmp(argv[i], "-t") == 0) {
             config.num_threads = atoi(argv[++i]);
         } else if (strcmp(argv[i], "-s") == 0) {
