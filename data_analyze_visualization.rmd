@@ -14,8 +14,8 @@ library(ggplot2)
 library(dplyr)
 
 # Read the "static" and "dynamic" datasets
-data_HPC_S <- read.table("C:/Users/qinlo/OneDrive/Desktop/4009_Computational_Data_Analysis/static_setonix.tsv", header = TRUE)
-data_HPC_D <- read.table("C:/Users/qinlo/OneDrive/Desktop/4009_Computational_Data_Analysis/dynamic_setonix.tsv", header = TRUE)
+data_HPC_S <- read.table("static_setonix.tsv", header = TRUE)
+data_HPC_D <- read.table("dynamic_setonix.tsv", header = TRUE)
 
 # Add a column to indicate the source of the data
 data_HPC_S$Source <- "Static"
@@ -53,7 +53,7 @@ ggplot(thread_averages, aes(x = Num_Threads, y = Avg_Total_Time, color = Source)
          scale_y_continuous(breaks = c(0,2, 5, 10, 13))
 
 
-````
+```
 
 
 
@@ -93,7 +93,7 @@ library(ggplot2)
 library(dplyr)
 
 # Read the CSV file
-data_ReductionCritical <- read.csv("C:/Users/qinlo/OneDrive/Desktop/4009_Computational_Data_Analysis/Reduction_Critical.csv")
+data_ReductionCritical <- read.csv("Reduction_Critical.csv")
 
 # Create a plot with improved aesthetics
 plot <- ggplot(data_ReductionCritical, aes(x = Threads, y = Runtime, color = Construct)) +
@@ -129,7 +129,7 @@ library(ggplot2)
 library(dplyr)
 
 # Read the CSV file
-data_strategy <- read.csv("C:/Users/qinlo/OneDrive/Desktop/4009_Computational_Data_Analysis/strategies.csv")
+data_strategy <- read.csv("strategies.csv")
 
 # Filter the data for the "runtime" category
 runtime_data <- data_strategy %>%
