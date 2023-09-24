@@ -21,3 +21,6 @@ for threads in "${thread_values[@]}"; do
         ./Project_experiment_auto -t $threads -s static 50 -c $constr -f $filename
     done
 done
+
+
+

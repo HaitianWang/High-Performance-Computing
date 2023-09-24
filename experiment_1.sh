@@ -14,7 +14,8 @@ declare -a constructs=("reduction" "critical")
 # 遍历1到16的线程数
 for i in {1..16}; do
     # 遍历每个construct
+    thread=$((2**$i))
     for constr in "${constructs[@]}"; do
-        ./Project_experiment_auto -t $i -s static 50 -c $constr -f $filename
+        ./Project_experiment_auto -t $thread -s static 50 -c $constr -f $filename
     done
 done
