@@ -161,7 +161,7 @@ void freeAll(){
 
 int main(int argc, char* argv[]) {
  
-    int num_threads_array[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+    int num_threads_array[] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,18,20,24,30,36,48,64,72,96,128,200,256};
     int chunk_size_static_array[] = {1, 2, 4, 8, 16,32,64,128,256,512,1024,2048};
 
     int num_threads_length = sizeof(num_threads_array) / sizeof(num_threads_array[0]);
