@@ -1,0 +1,248 @@
+---
+title: "Project1- CITS5507 - Fish School Behavior"
+author: "Long Qin(23829101)  Haitian Wang(23815631)"
+date: "2023-09-25"
+output: html_document
+---
+
+# Experiment 1
+## 1.1
+```{r}
+
+# Load the necessary libraries if you haven't already
+library(ggplot2)
+library(dplyr)
+
+# Read the "static" and "dynamic" datasets
+data_HPC_S <- read.table("C:/Users/qinlo/OneDrive/Desktop/4009_Computational_Data_Analysis/static_setonix.tsv", header = TRUE)
+data_HPC_D <- read.table("C:/Users/qinlo/OneDrive/Desktop/4009_Computational_Data_Analysis/dynamic_setonix.tsv", header = TRUE)
+
+# Read the "guided" dataset
+data_HPC_G <- read.table("C:/Users/qinlo/OneDrive/Desktop/4009_Computational_Data_Analysis/guided_setonix.tsv", header = TRUE)
+
+# Add a column to indicate the source of the data
+data_HPC_S$Source <- "Static"
+data_HPC_D$Source <- "Dynamic"
+data_HPC_G$Source <- "Guided"
+
+# Combine the datasets into one
+combined_data <- bind_rows(data_HPC_S, data_HPC_D, data_HPC_G)
+
+# Group the combined data by Num_Threads and Source, and calculate the average Total_Time for each group
+thread_averages <- combined_data %>%
+  group_by(Num_Threads, Source) %>%
+  summarize(Avg_Total_Time = mean(Total_Time))
+
+# Create a plot to visualize the combined data
+ggplot(thread_averages, aes(x = Num_Threads, y = Avg_Total_Time, color = Source)) +
+  geom_line(size = 0.7) +
+  geom_point(size = 0.9, fill = "white", shape = 21, alpha = 2) +
+  labs(x = "Number of Threads", y = "Average Total Time",
+       title = "Total Time vs. Threads (Static vs. Dynamic vs. Guided)",
+       subtitle = "Performance Analysis",
+       caption = "Data Source files: static_setonix.tsv, dynamic_setonix.tsv, guided_setonix.tsv") +
+  theme_minimal() +
+  theme(legend.position = "top",  # Position the legend at the top
+        plot.title = element_text(size = 15, face = "bold"),
+        plot.subtitle = element_text(size = 12, face = "italic"),
+        plot.caption = element_text(hjust = 0),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12, face = "bold"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        panel.border = element_blank()) +
+  scale_x_continuous(breaks = c(0, 25, 50, 100, 200)) +  # Specify the x-axis breaks
+  scale_y_continuous(breaks = c(0, 2, 5, 10, 13))
+
+```
+# 1.2
+
+```{r}
+# Create a plot to visualize the combined data, focusing on x < 25
+ggplot(thread_averages, aes(x = Num_Threads, y = Avg_Total_Time, color = Source)) +
+  geom_line(size = 0.7) +
+  geom_point(size = 0.9, fill = "white", shape = 21, alpha = 0.7) +
+  labs(x = "Number of Threads", y = "Average Total Time",
+       title = "Total Time vs. Threads (Static vs. Dynamic vs. Guided)",
+       subtitle = "Details - Threads less than 20",
+       caption = "Data Source files: static_setonix.tsv   dynamic_setonix.tsv") +
+  theme_minimal() +
+  theme(legend.position = "top",
+        plot.title = element_text(size = 15, face = "bold"),
+        plot.subtitle = element_text(size = 12, face = "italic"),
+        plot.caption = element_text(hjust = 0),
+        axis.text = element_text(size = 10),
+        axis.title = element_text(size = 12, face = "bold"),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        panel.border = element_blank()) +
+  scale_x_continuous(breaks = c(0, 5, 10,15, 20)) +  # Specify the x-axis breaks
+  scale_y_continuous(breaks = c(0, 5, 10, 13)) +
+  coord_cartesian(xlim = c(0, 20))  # Set x-axis limits to focus on x < 25
+
+
+```
+
+# 1.3
+
+```{r}
+library(ggplot2)
+library(dplyr)
+
+# Read the CSV file
+data_ReductionCritical <- read.csv("C:/Users/qinlo/OneDrive/Desktop/4009_Computational_Data_Analysis/Reduction_Critical.csv")
+
+# Create a plot with improved aesthetics
+plot <- ggplot(data_ReductionCritical, aes(x = Threads, y = Runtime, color = Construct)) +
+  geom_point(size = 3) + # Increase point size
+  geom_line(size = 1, linetype = "solid") + # Solid lines connecting points
+  scale_x_log10() +
+  labs(x = "Threads - log10", y = "PerformanceTime", title = "PerformanceTime vs. Threads by Construct") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 16, face = "bold"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold"),
+    legend.title = element_text(size = 12),
+    legend.text = element_text(size = 10)
+  )
+
+# Print the improved plot
+print(plot)
+
+```
+
+
+# Experiment 2
+
+
+```{r}
+# ...
+# ...```{r}
+# Load the necessary libraries if you haven't already
+library(ggplot2)
+library(dplyr)
+
+# Read the CSV file
+data_strategy <- read.csv("C:/Users/qinlo/OneDrive/Desktop/4009_Computational_Data_Analysis/strategies.csv")
+
+# Filter the data for the "runtime" category
+runtime_data <- data_strategy %>%
+  filter(Schedule == "runtime" & Threads %in% c(2, 4, 8))
+
+# Define custom color and linetype palettes for schedules
+color_palette <- c("static" = "blue", "dynamic" = "red", "guided" = "green", "runtime" = "purple")
+linetype_palette <- c("static" = "solid", "dynamic" = "dashed", "guided" = "dotdash", "runtime" = "dotted")
+
+# Create individual line plots for each combination, faceted by Threads
+plots <- data_strategy %>%
+  ggplot(aes(x = Chunk, y = Runtime, color = Schedule, linetype = Schedule)) +
+  geom_line(size = 0.8) +
+  geom_hline(data = runtime_data, aes(yintercept = Runtime), linetype = "dotted", color = "purple", size = 1.5) + # Add horizontal lines for the "runtime" category with increased size and color
+  labs(x = "Chunk Numbers", y = "PerformanceTime",
+       title = "PerformanceTime vs. Chunk by Threads and Schedule",
+       caption = "Data Source file: strategies.csv") +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(size = 15, face = "bold"),
+    plot.caption = element_text(hjust = 0),
+    axis.text = element_text(size = 10),
+    axis.title = element_text(size = 12, face = "bold"),
+    panel.grid.major = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.background = element_rect(fill = "white"),
+    plot.background = element_rect(fill = "white"),
+    panel.border = element_blank(),
+    legend.position = "top",
+    legend.title = element_blank(),
+    legend.key = element_blank(),
+    legend.background = element_blank()
+  ) +
+  scale_color_manual(values = color_palette) +
+  scale_y_log10() +
+  scale_x_log10() +
+  scale_linetype_manual(values = linetype_palette) +
+  facet_wrap(~Threads, scales = "free_y", nrow = 3, labeller = labeller(Threads = c("2" = "2 Threads", "4" = "4 Threads", "8" = "8 Threads"))) # Change facet labels
+
+print(plots)
+
+
+```
+
+
+# Experiment 3
+## 3.1
+
+```{r}
+library(ggplot2)
+# Data for reduction and critical sections
+num_threads <- c(4, 6, 8, 10, 12, 14, 16)
+reduction_times <- c(0.2, 0.173, 0.173, 0.142, 0.159, 0.13, 0.125)
+critical_times <- c(8.532, 10.722, 13.908, 16.478, 17.206, 17.162, 15.167)
+
+# Create data frames
+reduction_data <- data.frame(Thread = num_threads, Time = reduction_times, Section = "Reduction")
+critical_data <- data.frame(Thread = num_threads, Time = critical_times, Section = "Critical")
+
+# Combine data frames
+combined_data <- rbind(reduction_data, critical_data)
+
+# Create the bar chart
+ggplot(combined_data, aes(x = as.factor(Thread), y = Time, fill = Section)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Number of Threads", y = "PerformanceTime", title = "Comparison of Reduction vs. Critical Sections") +
+  theme_minimal() +
+  theme(legend.position = "top") +
+  scale_fill_manual(values = c("Reduction" = "blue", "Critical" = "red"))
+
+```
+
+
+## 3.2
+
+```{r}
+
+# Assuming you have your data in a data frame called "data"
+data <- read.table(text = "
+construct    thread_num    total_time
+critical2    4             264.935
+critical2    6             309.856
+critical2    8             343.083
+critical2    10            376.624
+critical2    12            403.853
+critical2    14            392.836
+critical2    16            359.991
+reduction    4             50.24
+critical1    4             126.418
+reduction    6             57.839
+critical1    6             171.52
+reduction    8             52.911
+critical1    8             207.754
+reduction    10            34.267
+critical1    10            218.854
+reduction    12            47.591
+critical1    12            210.014
+reduction    14            46.249
+critical1    14            195.282
+reduction	   16	         	 44.437
+critical1	   16		         192.251
+
+", header = TRUE)
+
+# Load the ggplot2 library
+library(ggplot2)
+
+# Create a bar plot
+ggplot(data, aes(x = construct, y = total_time, fill = factor(thread_num))) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Construct", y = "PerformanceTime", title = "Total Time by Construct and Thread Number") +
+  scale_fill_discrete(name = "Thread Numbers") +
+  theme_minimal()
+
+
+
+```
